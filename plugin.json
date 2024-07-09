@@ -1,0 +1,28 @@
+{
+    "name": "WPNuxt Plugin",
+    "version": "0.0.1",
+    "download_url": "https://github.com/scottyzen/woonuxt-settings/releases/download/1.0.55/woonuxt-settings.zip",
+
+    "homepage": "https://wpnuxt.com/",
+    "tested": "6.5",
+    "upgrade_notice": "Fix error when WooCommerce is disabled or not installed",
+
+    "author": "Wouter Vernaillen",
+    "author_homepage": "https://vernaillen.dev/",
+
+    "sections": {
+        "description": "WPNuxt is a plugin that helps you to integrate Nuxt.js with a headless WordPress.",
+        "installation": "(Recommended) Installation instructions.",
+        "changelog": "<h2>0.0.1</h2><p>Init Plugin</p>"
+    },
+
+    "icons": {
+        "1x": "",
+        "2x": ""
+    },
+
+    "banners": {
+        "low": "",
+        "high": ""
+    }
+}
