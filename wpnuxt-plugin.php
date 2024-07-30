@@ -11,7 +11,7 @@
  * Plugin Name:       WPNuxt
  * Plugin URI:        https://wpnuxt.com
  * Description:       A plugin to prepare WordPress as a headless CMS to use with WPNuxt
- * Version:           0.0.1
+ * Version:           0.0.2
  * Requires at least: 6.0
  * Tested up to:      6.5
  * Requires PHP:      7.4
@@ -180,7 +180,6 @@ function registerWPNuxtSettings()
     // } else {
     //}
     add_settings_section('global_setting', 'Global Settings', 'global_setting_callback', 'wpnuxt');
-    add_settings_section('deploy_button', 'Deploy', 'deployButtonCallback', 'wpnuxt');
 }
 
 /**
@@ -216,7 +215,6 @@ margin-left: 5px !important; margin-top: 5px !important; margin-right: 2px !impo
 }
 add_action( 'admin_bar_menu', 'register_admin_bar_menu', 500);
 
-
 // Section callback
 function requiredPluginsCallback()
 {
@@ -227,7 +225,7 @@ function requiredPluginsCallback()
     }, true);
     ?>
     <details  <?php echo $is_all_plugins_active ? '' : 'open'; ?>>
-        <summary>Required & recommended plugins <?php echo $is_all_plugins_active ? '✅' : ''; ?></summary>
+        <summary>Required & recommended plugins <?php echo $is_all_plugins_active ? '✅' : '❎'; ?></summary>
         <div class="wpnuxt-section">
             <h4>Required plugins:</h4>
             <ul class="required-plugins-list">
@@ -372,18 +370,23 @@ function requiredPluginsCallback()
     $endpoint = get_site_url() . '/' . $gql_endpoint;
     $faustwp_settings = get_option('faustwp_settings');
 
+    $permalink_structure = get_option( 'permalink_structure' );
+
     // Enable Public Introspection
     $publicIntrospectionEnabled = isset($gql_settings['public_introspection_enabled']) ? $gql_settings['public_introspection_enabled'] == 'on' : false;
     // faustwp_settings[frontend_uri]:
     $frontend_uri_is_set = isset($faustwp_settings['frontend_uri']) ? str_starts_with($faustwp_settings['frontend_uri'], 'http') : false;
 
+    $permalink_structure_is_set = $permalink_structure == '/%postname%/';
+
     $allSettingHaveBeenMet =
         $publicIntrospectionEnabled && 
-        $frontend_uri_is_set
+        $frontend_uri_is_set &&
+        $permalink_structure_is_set
     ?>
 
     <details <?php echo $allSettingHaveBeenMet ? '' : 'open'; ?>>
-        <summary>Required plugin settings for WPNuxt <?php echo $allSettingHaveBeenMet ? '✅' : ''; ?></summary>
+        <summary>Required plugin settings for WPNuxt <?php echo $allSettingHaveBeenMet ? '✅' : '❎'; ?></summary>
         <table class="form-table" role="presentation">
             <tbody>
                 <tr>
@@ -398,7 +401,7 @@ function requiredPluginsCallback()
                     <td scope="row">Enable Public Introspection.</td>
                     <td>
                         <div class="flex">
-                            <span style="color: #D63638;"><?php echo $publicIntrospectionEnabled ? '✅' : '(disabled)'; ?></span>
+                            <span style="color: #D63638;"><?php echo $publicIntrospectionEnabled ? '✅' : '❎'; ?></span>
                         </div>
                     </td>
                 </tr>
@@ -409,53 +412,25 @@ function requiredPluginsCallback()
                     <td scope="row">Frontend uri</td>
                     <td>
                         <div class="flex">
-                        <span style="color: #D63638;"><?php echo $frontend_uri_is_set ? '✅ ' . $faustwp_settings['frontend_uri'] : '(missing)'; ?></span>
+                            <span style="color: #D63638;"><?php echo $frontend_uri_is_set ? '✅ ' . $faustwp_settings['frontend_uri'] : '❎'; ?></span>
                         </div>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="2"><h4><a href="/wp-admin/options-permalink.php">Permalinks</a></h4></td>
+                </tr>
+                <tr>
+                    <td scope="row">Set permalink structure to: /%postname%/</td>
+                    <td>
+                        <div class="flex">
+                            <span style="color: #D63638;"><?php echo ($permalink_structure_is_set ? '✅ ' : '❎') . ' ' . $permalink_structure; ?></span>
+                        </div>
+                    </td>
+                </tr>
+                
             </tbody>
         </table>
     </details>
-<?php
-}
-
-function deployButtonCallback()
-{
-    $site_name = get_bloginfo('name');
-    $gql_settings = get_option('graphql_general_settings');
-    $gql_endpoint = isset($gql_settings['graphql_endpoint']) ? $gql_settings['graphql_endpoint'] : 'graphql';
-    $endpoint = get_site_url() . '/' . $gql_endpoint;
-    $faustwp_settings = get_option('faustwp_settings');
-
-    // Enable Public Introspection
-    $publicIntrospectionEnabled = isset($gql_settings['public_introspection_enabled']) ? $gql_settings['public_introspection_enabled'] == 'on' : false;
-    // faustwp_settings[frontend_uri]:
-    $frontend_uri_is_set = isset($faustwp_settings['frontend_uri']) ? str_starts_with($faustwp_settings['frontend_uri'], 'http') : false;
-
-    $allSettingHaveBeenMet =
-        $publicIntrospectionEnabled && $frontend_uri_is_set
-    ?>
-
-    <table class="form-table" role="presentation">
-        <tbody>
-            <tr>
-                <th scope="row"><label for="wpnuxt_options[build_hook]">Deploy your Site.</label></th>
-                <td>
-                    <div class="flex">
-                        <a id="netlify-button" href="https://app.netlify.com/start/deploy?repository=https://github.com/vernaillen/wpnuxt-demo#WPNUXT_WORDPRESS_URL=<?php echo $endpoint; ?>&NUXT_IMAGE_DOMAINS=<?php echo $_SERVER['HTTP_HOST']; ?>" target="_blank" class="mr-8">
-                            <img src="<?php echo plugins_url('assets/netlify.svg', __FILE__, ); ?>" alt="Deploy to Netlify" width="160" height="40">
-                        </a>
-                        <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%vernaillen%2wpnuxt-demo3&repository-name=<?php echo $site_name; ?>&env=WPNUXT_WORDPRESS_URL,NUXT_IMAGE_DOMAINS" target="_blank" class="vercel-button" data-metrics-url="https://vercel.com/p/button">
-                            <svg data-testid="geist-icon" fill="none" height="15" width="15" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2L2 19.7778H22L12 2Z" fill="#fff" stroke="#fff" stroke-width="1.5"></path>
-                            </svg>
-                            <span>Deploy to Vercel</span>
-                        </a>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
 <?php
 }
 
@@ -469,16 +444,6 @@ function global_setting_callback()
     <div class="global_setting wpnuxt-section">
         <table class="form-table" role="presentation">
             <tbody>
-
-                <!-- LOGO -->
-                <tr>
-                    <th scope="row"><label for="wpnuxt_options[logo]">Logo</label></th>
-                    <td>
-                        <input type="text" class="widefat" name="wpnuxt_options[logo]" value="<?php echo isset($options['logo']) ? $options['logo'] : ''; ?>" placeholder="e.g. https://example.com/logo.png" />
-                        <p class="description">You can upload the logo in the Media Library and copy the URL here.</p>
-                    </td>
-                </tr>
-
                 <!-- FRONT END URL -->
                 <tr>
                     <th scope="row"><label for="wpnuxt_options[frontEndUrl]">Front End URL</label></th>
