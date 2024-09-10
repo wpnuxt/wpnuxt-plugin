@@ -1,7 +1,7 @@
 {
   "name": "wpnuxt-plugin",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "node": ">=16.0.0"
   },
@@ -21,7 +21,8 @@
   },
   "files": [
     "README.md",
-    "wpnuxt-plugin.php"
+    "wpnuxt-plugin.php",
+    "assets/styles.css"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.26.0",

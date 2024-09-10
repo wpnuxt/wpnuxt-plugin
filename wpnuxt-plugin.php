@@ -11,7 +11,7 @@
  * Plugin Name:       WPNuxt
  * Plugin URI:        https://wpnuxt.com
  * Description:       A plugin to prepare WordPress as a headless CMS to use with WPNuxt
- * Version:           0.0.2
+ * Version:           0.0.3
  * Requires at least: 6.0
  * Tested up to:      6.5
  * Requires PHP:      7.4
@@ -29,21 +29,20 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-define('WPNUXT_PLUGIN_VERSION', '0.0.1');
-define('WP_GRAPHQL_VERSION', '1.27.0');
-define('WP_GRAPHQL_CONTENT_BLOCKS_VERSION', 'v4.0.0');
-define('FAUST_WP_VERSION', '1.3.1');
-define('ADVANCED_CUSTOM_FIELDS_VERSION', '6.3.1');
-define('WP_GRAPHQL_FOR_ACF_VERSION', '2.2.0');
+define('WPNUXT_PLUGIN_VERSION', '0.0.3');
+define('WPNUXT_WP_GRAPHQL_VERSION', '1.28.1');
+define('WPNUXT_WP_GRAPHQL_CONTENT_BLOCKS_VERSION', 'v4.1.0');
+define('WPNUXT_FAUST_WP_VERSION', '1.3.2');
+define('WPNUXT_ADVANCED_CUSTOM_FIELDS_VERSION', '6.3.6');
+define('WPNUXT_WP_GRAPHQL_FOR_ACF_VERSION', '2.4.1');
 
 // Define Globals
-global $plugin_list;
+global $wpnuxt_plugin_list;
 global $github_version;
 
 add_action('admin_enqueue_scripts', function () {
     if (isset($_GET['page']) && $_GET['page'] === 'wpnuxt') {
-        wp_enqueue_style('admin_css_wpnuxt', plugins_url('assets/styles.css', __FILE__), false, WPNUXT_PLUGIN_VERSION);
-        wp_enqueue_script('admin_js', plugins_url('/assets/admin.js', __FILE__), ['jquery'], WPNUXT_PLUGIN_VERSION, true);
+        wp_enqueue_style('admin_css_wpnuxt', plugins_url('/assets/styles.css', __FILE__), false, WPNUXT_PLUGIN_VERSION);
     }
 });
 
@@ -69,11 +68,11 @@ require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-$plugin_list = [
+$wpnuxt_plugin_list = [
     'wp-graphql' => [
         'name' => 'WPGraphQL',
         'description' => 'A GraphQL API for WordPress with a built-in GraphiQL playground.',
-        'url' => 'https://downloads.wordpress.org/plugin/wp-graphql.' . WP_GRAPHQL_VERSION . '.zip',
+        'url' => 'https://downloads.wordpress.org/plugin/wp-graphql.' . WPNUXT_WP_GRAPHQL_VERSION . '.zip',
         'file' => 'wp-graphql/wp-graphql.php',
         'icon' => 'https://www.wpgraphql.com/logo-wpgraphql.svg',
         'slug' => 'wp-graphql',
@@ -83,7 +82,7 @@ $plugin_list = [
     'wp-graphql-content-blocks' => [
         'name' => 'WPGraphQL Content Blocks',
         'description' => 'WordPress plugin that extends WPGraphQL to support querying (Gutenberg) Blocks as data.',
-        'url' => 'https://github.com/wpengine/wp-graphql-content-blocks/releases/download/' . WP_GRAPHQL_CONTENT_BLOCKS_VERSION . '/wp-graphql-content-blocks.zip',
+        'url' => 'https://github.com/wpengine/wp-graphql-content-blocks/releases/download/' . WPNUXT_WP_GRAPHQL_CONTENT_BLOCKS_VERSION . '/wp-graphql-content-blocks.zip',
         'file' => 'wp-graphql-content-blocks/wp-graphql-content-blocks.php',
         'icon' => 'https://www.wpgraphql.com/logo-wpgraphql.svg',
         'slug' => 'wp-graphql-content-blocks',
@@ -103,7 +102,7 @@ $plugin_list = [
     'advanced-custom-fields' => [
         'name' => 'Advanced Custom Fields',
         'description' => 'Advanced Custom Fields (ACF) turns WordPress sites into a fully-fledged content management system by giving you all the tools to do more with your data.',
-        'url' => 'https://downloads.wordpress.org/plugin/advanced-custom-fields.' . ADVANCED_CUSTOM_FIELDS_VERSION . '.zip',
+        'url' => 'https://downloads.wordpress.org/plugin/advanced-custom-fields.' . WPNUXT_ADVANCED_CUSTOM_FIELDS_VERSION . '.zip',
         'file' => 'advanced-custom-fields/acf.php',
         'icon' => 'https://ps.w.org/advanced-custom-fields/assets/icon.svg?rev=3096880',
         'slug' => 'advanced-custom-fields',
@@ -113,7 +112,7 @@ $plugin_list = [
     'wpgraphql-acf' => [
         'name' => 'WPGraphQL for ACF',
         'description' => 'WPGraphQL for Advanced Custom Fields',
-        'url' => 'https://downloads.wordpress.org/plugin/wpgraphql-acf.' . WP_GRAPHQL_FOR_ACF_VERSION . '.zip',
+        'url' => 'https://downloads.wordpress.org/plugin/wpgraphql-acf.' . WPNUXT_WP_GRAPHQL_FOR_ACF_VERSION . '.zip',
         'file' => 'wpgraphql-acf/wpgraphql-acf.php',
         'icon' => 'https://ps.w.org/wpgraphql-acf/assets/icon-128x128.png?rev=3012214',
         'slug' => 'wpgraphql-acf',
@@ -182,29 +181,29 @@ function wpNuxtOptionsPageHtml()
 add_action('admin_init', 'registerWPNuxtSettings');
 function registerWPNuxtSettings()
 {
-    global $plugin_list;
+    global $wpnuxt_plugin_list;
 
     register_setting('wpnuxt_options', 'wpnuxt_options');
 
     // Return true if all plugins are active
-    $is_all_plugins_active = array_reduce($plugin_list, function ($carry, $plugin) {
+    $is_all_plugins_active = array_reduce($wpnuxt_plugin_list, function ($carry, $plugin) {
         return $carry && ($plugin['required'] == 'false' || is_plugin_active($plugin['file']));
     }, true);
 
     // if all plugins are active don't show required plugins section
     // if (!$is_all_plugins_active) {
-        add_settings_section('required_plugins', 'Plugins', 'requiredPluginsCallback', 'wpnuxt');
+        add_settings_section('required_plugins', 'Plugins', 'requiredWPNuxtPluginsCallback', 'wpnuxt');
     // } else {
     //}
-    add_settings_section('global_setting', 'Global Settings', 'global_setting_callback', 'wpnuxt');
+    add_settings_section('global_setting', 'Global Settings', 'globalWPNuxtSettingCallback', 'wpnuxt');
 }
 
 // Section callback
-function requiredPluginsCallback()
+function requiredWPNuxtPluginsCallback()
 {
-    global $plugin_list;    
+    global $wpnuxt_plugin_list;    
     // Return true if all plugins are active
-    $is_all_plugins_active = array_reduce($plugin_list, function ($carry, $plugin) {
+    $is_all_plugins_active = array_reduce($wpnuxt_plugin_list, function ($carry, $plugin) {
         return $carry && ($plugin['required'] == 'false' || is_plugin_active($plugin['file']));
     }, true);
     ?>
@@ -213,7 +212,7 @@ function requiredPluginsCallback()
         <div class="wpnuxt-section">
             <h4>Required plugins:</h4>
             <ul class="required-plugins-list">
-                <?php foreach ($plugin_list as $plugin): 
+                <?php foreach ($wpnuxt_plugin_list as $plugin): 
                     if ($plugin['required'] === 'false') {
                         continue;
                     }?>
@@ -269,7 +268,7 @@ function requiredPluginsCallback()
             </ul>
             <h4>Recommended plugins:</h4>
             <ul class="required-plugins-list">
-                <?php foreach ($plugin_list as $plugin):
+                <?php foreach ($wpnuxt_plugin_list as $plugin):
                     if ($plugin['required'] === 'true') {
                         continue;
                     }?>
@@ -330,10 +329,10 @@ function requiredPluginsCallback()
      * Check if the plugin is installed.
      */
     if (isset($_GET['install_plugin'])) {
-        global $plugin_list;
+        global $wpnuxt_plugin_list;
 
         $upgrader = new Plugin_Upgrader();
-        $plugin = $plugin_list[$_GET['install_plugin']];
+        $plugin = $wpnuxt_plugin_list[$_GET['install_plugin']];
         $fileURL = WP_PLUGIN_DIR . '/' . $plugin['file'];
 
         if (!is_plugin_active($plugin['file'])) {
@@ -416,9 +415,28 @@ function requiredPluginsCallback()
 }
 
 // Field callback
-function global_setting_callback()
+function globalWPNuxtSettingCallback()
 {
     $options = get_option('wpnuxt_options');
+
+    $faustwp_settings = get_option( 'faustwp_settings' );
+    $frontend_uri = $faustwp_settings['frontend_uri'];
+    $config_url = $frontend_uri . '/api/config';
+
+    $args = array(
+        'headers' => array(
+            'Accept' => 'application/json'
+        ),
+    );
+    $response = wp_remote_get($config_url, $args);
+
+    if (is_wp_error($response)) {
+        $json_data = $response->get_error_message();
+    } else {
+        $json_data = wp_remote_retrieve_body($response);
+        $json_obj = json_decode($json_data);
+        $wpNuxt = $json_obj->wpNuxt;
+    }
     ?>
 
     <div class="global_setting wpnuxt-section">
@@ -434,6 +452,9 @@ function global_setting_callback()
                 </tr>
             </tbody>
         </table>
+        hasBlocksModule: <?php echo $wpNuxt->hasBlocksModule; ?><br>
+        hasAuthModule: <?php echo $wpNuxt->hasAuthModule; ?><br>
+        defaultMenuName: <?php echo $wpNuxt->defaultMenuName; ?><br>
     </div>
 <?php
 }
