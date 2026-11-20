@@ -1,5 +1,11 @@
 # wpnuxt-plugin
 
+## 0.0.7
+
+### Patch Changes
+
+- 8274708: Draft previews from the block editor open the draft's path on the Nuxt frontend, and the block editor no longer defaults to non-fullscreen mode.
+
 ## 0.0.6
 
 ### Patch Changes

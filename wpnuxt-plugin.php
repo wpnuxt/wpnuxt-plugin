@@ -11,7 +11,7 @@
  * Plugin Name:       WPNuxt
  * Plugin URI:        https://wpnuxt.com
  * Description:       A plugin to prepare WordPress as a headless CMS to use with WPNuxt
- * Version:           0.0.6
+ * Version:           0.0.7
  * Requires at least: 6.0
  * Tested up to:      6.5
  * Requires PHP:      7.4
@@ -29,7 +29,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-define('WPNUXT_PLUGIN_VERSION', '0.0.6');
+define('WPNUXT_PLUGIN_VERSION', '0.0.7');
 define('WPNUXT_WP_GRAPHQL_VERSION', '1.28.1');
 define('WPNUXT_WP_GRAPHQL_CONTENT_BLOCKS_VERSION', 'v4.1.0');
 define('WPNUXT_ADVANCED_CUSTOM_FIELDS_VERSION', '6.3.6');
