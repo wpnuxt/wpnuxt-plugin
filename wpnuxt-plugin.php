@@ -38,6 +38,7 @@ define('WPNUXT_WP_GRAPHQL_FOR_ACF_VERSION', '2.4.1');
 require __DIR__ . '/includes/deny-public-access.php';
 require __DIR__ . '/includes/frontend-links.php';
 require __DIR__ . '/includes/cache-purge.php';
+require __DIR__ . '/includes/content-updated.php';
 
 // Define Globals
 global $wpnuxt_plugin_list;
