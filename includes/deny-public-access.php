@@ -51,6 +51,22 @@ function is_wordfence_central_request(): bool {
 	return get_wpnuxt_option( 'allowWordfenceCentral' ) && isset( $_GET['wfcentral_admin_redirect'] );
 }
 
+/**
+ * The theme/plugin file editor loads the front end to check a save for fatal errors.
+ *
+ * @see https://github.com/WordPress/wordpress-develop/blob/6.6.2/src/wp-includes/load.php
+ */
+function doing_file_editor_save(): bool {
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	if ( ! isset( $_REQUEST['wp_scrape_key'], $_REQUEST['wp_scrape_nonce'] ) ) {
+		return false;
+	}
+	$key   = substr( sanitize_key( wp_unslash( $_REQUEST['wp_scrape_key'] ) ), 0, 32 );
+	$nonce = wp_unslash( $_REQUEST['wp_scrape_nonce'] );
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	return get_transient( 'scrape_key_' . $key ) === $nonce;
+}
+
 add_action( 'template_redirect', __NAMESPACE__ . '\\maybe_unhook_faust_redirect', 0 );
 function maybe_unhook_faust_redirect() {
 	if ( is_redirect_enabled() || is_wordfence_central_request() ) {
