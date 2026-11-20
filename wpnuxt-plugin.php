@@ -37,6 +37,7 @@ define('WPNUXT_WP_GRAPHQL_FOR_ACF_VERSION', '2.4.1');
 
 require __DIR__ . '/includes/deny-public-access.php';
 require __DIR__ . '/includes/frontend-links.php';
+require __DIR__ . '/includes/cache-purge.php';
 
 // Define Globals
 global $wpnuxt_plugin_list;
@@ -465,6 +466,18 @@ function globalWPNuxtSettingCallback()
                             Point post, page and term links and sitemap URLs to the Front End URL
                         </label>
                         <p class="description">Replaces Faust.js's "Enable Post and Category URL rewrites". GraphQL responses keep the WordPress URLs.</p>
+                    </td>
+                </tr>
+                <!-- CACHE PURGE -->
+                <tr>
+                    <th scope="row">Cache purge</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpnuxt_options[purgeCache]" value="1" <?php checked(!empty($options['purgeCache'])); ?> />
+                            Purge the frontend cache when a post or page is saved
+                        </label>
+                        <p class="description">Calls <code>/api/purgeCache</code> on the Front End URL with the token below in the <code>x-nuxt-multi-cache-token</code> header.</p>
+                        <input type="password" class="regular-text" name="wpnuxt_options[cacheToken]" value="<?php echo esc_attr($options['cacheToken'] ?? ''); ?>" placeholder="nuxt-multi-cache token" autocomplete="off" />
                     </td>
                 </tr>
                 <!-- WORDFENCE CENTRAL -->
