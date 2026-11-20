@@ -153,6 +153,14 @@ function sitemap_entry( $entry ) {
 }
 
 /**
+ * Yoast's homepage, posts page and post type archive entries skip wpseo_sitemap_entry.
+ */
+add_filter( 'wpseo_sitemap_post_type_first_links', __NAMESPACE__ . '\\yoast_first_links' );
+function yoast_first_links( $links ) {
+	return is_array( $links ) ? array_map( __NAMESPACE__ . '\\sitemap_entry', $links ) : $links;
+}
+
+/**
  * Yoast drops sitemap URLs on another domain right after this filter, so hand it the
  * WordPress URL here; sitemap_entry() switches it to the frontend afterwards.
  */
