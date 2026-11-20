@@ -11,7 +11,7 @@
  * Plugin Name:       WPNuxt
  * Plugin URI:        https://wpnuxt.com
  * Description:       A plugin to prepare WordPress as a headless CMS to use with WPNuxt
- * Version:           0.0.3
+ * Version:           0.0.4
  * Requires at least: 6.0
  * Tested up to:      6.5
  * Requires PHP:      7.4
@@ -29,12 +29,14 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-define('WPNUXT_PLUGIN_VERSION', '0.0.3');
+define('WPNUXT_PLUGIN_VERSION', '0.0.4');
 define('WPNUXT_WP_GRAPHQL_VERSION', '1.28.1');
 define('WPNUXT_WP_GRAPHQL_CONTENT_BLOCKS_VERSION', 'v4.1.0');
-define('WPNUXT_FAUST_WP_VERSION', '1.3.2');
 define('WPNUXT_ADVANCED_CUSTOM_FIELDS_VERSION', '6.3.6');
 define('WPNUXT_WP_GRAPHQL_FOR_ACF_VERSION', '2.4.1');
+
+require __DIR__ . '/includes/deny-public-access.php';
+require __DIR__ . '/includes/frontend-links.php';
 
 // Define Globals
 global $wpnuxt_plugin_list;
@@ -86,16 +88,6 @@ $wpnuxt_plugin_list = [
         'file' => 'wp-graphql-content-blocks/wp-graphql-content-blocks.php',
         'icon' => 'https://www.wpgraphql.com/logo-wpgraphql.svg',
         'slug' => 'wp-graphql-content-blocks',
-        'required' => 'true',
-        'info_url' => 'https://www.wpgraphql.com/'
-    ],
-    'faustwp' => [
-        'name' => 'Faust.js',
-        'description' => 'Faust.js Companion Plugin for WordPress, by WPEngine.',
-        'url' => 'https://downloads.wordpress.org/plugin/faustwp.zip',
-        'file' => 'faustwp/faustwp.php',
-        'icon' => 'https://faustjs.org/_next/image?url=%2Fimages%2Ffaust-logo-256x256.png&w=48&q=75',
-        'slug' => 'faustwp',
         'required' => 'true',
         'info_url' => 'https://www.wpgraphql.com/'
     ],
@@ -348,14 +340,13 @@ function requiredWPNuxtPluginsCallback()
     }
 
     $gql_settings = get_option('graphql_general_settings');
-    $faustwp_settings = get_option('faustwp_settings');
+    $frontend_uri = \WPNuxt\Deny_Public_Access\get_frontend_uri();
 
     $permalink_structure = get_option( 'permalink_structure' );
 
     // Enable Public Introspection
     $publicIntrospectionEnabled = isset($gql_settings['public_introspection_enabled']) ? $gql_settings['public_introspection_enabled'] == 'on' : false;
-    // faustwp_settings[frontend_uri]:
-    $frontend_uri_is_set = isset($faustwp_settings['frontend_uri']) ? str_starts_with($faustwp_settings['frontend_uri'], 'http') : false;
+    $frontend_uri_is_set = str_starts_with($frontend_uri, 'http');
 
     $permalink_structure_is_set = $permalink_structure == '/%postname%/';
 
@@ -386,13 +377,13 @@ function requiredWPNuxtPluginsCallback()
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2"><h4><a href="/wp-admin/admin.php?page=faustwp-settings">Faust settings</a></h4></td>
+                    <td colspan="2"><h4>WPNuxt Global Settings (below)</h4></td>
                 </tr>
                 <tr>
-                    <td scope="row">Frontend uri</td>
+                    <td scope="row">Front End URL</td>
                     <td>
                         <div class="flex">
-                            <span style="color: #D63638;"><?php echo $frontend_uri_is_set ? '✅ ' . $faustwp_settings['frontend_uri'] : '❎'; ?></span>
+                            <span style="color: #D63638;"><?php echo $frontend_uri_is_set ? '✅ ' . esc_html($frontend_uri) : '❎'; ?></span>
                         </div>
                     </td>
                 </tr>
@@ -419,23 +410,16 @@ function globalWPNuxtSettingCallback()
 {
     $options = get_option('wpnuxt_options');
 
-    $faustwp_settings = get_option( 'faustwp_settings' );
-    $frontend_uri = $faustwp_settings['frontend_uri'];
-    $config_url = $frontend_uri . '/api/config';
-
-    $args = array(
-        'headers' => array(
-            'Accept' => 'application/json'
-        ),
-    );
-    $response = wp_remote_get($config_url, $args);
-
-    if (is_wp_error($response)) {
-        $json_data = $response->get_error_message();
-    } else {
-        $json_data = wp_remote_retrieve_body($response);
-        $json_obj = json_decode($json_data);
-        $wpNuxt = $json_obj->wpNuxt;
+    $frontend_uri = \WPNuxt\Deny_Public_Access\get_frontend_uri();
+    $wpNuxt = null;
+    if ($frontend_uri) {
+        $response = wp_remote_get(untrailingslashit($frontend_uri) . '/api/config', [
+            'headers' => ['Accept' => 'application/json'],
+        ]);
+        if (!is_wp_error($response)) {
+            $json_obj = json_decode(wp_remote_retrieve_body($response));
+            $wpNuxt = $json_obj->wpNuxt ?? null;
+        }
     }
     ?>
 
@@ -447,14 +431,60 @@ function globalWPNuxtSettingCallback()
                     <th scope="row"><label for="wpnuxt_options[frontEndUrl]">Front End URL</label></th>
                     <td>
                         <input type="text" class="widefat" name="wpnuxt_options[frontEndUrl]" value="<?php echo isset($options['frontEndUrl']) ? $options['frontEndUrl'] : ''; ?>" placeholder="e.g. https://my-nuxt-frontend.netlify.app" />
-                        <p class="description">This is the URL of your Nuxt site not the WordPress site.</p>
+                        <p class="description">This is the URL of your Nuxt site not the WordPress site. When empty, the Faust.js frontend URI is used.</p>
+                    </td>
+                </tr>
+                <!-- PUBLIC REDIRECT -->
+                <tr>
+                    <th scope="row">Public route redirect</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpnuxt_options[publicRedirect]" value="1" <?php checked(!empty($options['publicRedirect'])); ?> />
+                            Redirect requests for the WordPress front end to the Front End URL
+                        </label>
+                        <p class="description">Replaces the Faust.js "Enable public route redirects" setting. When this is on, Faust's redirect is skipped.</p>
+                    </td>
+                </tr>
+                <!-- PREVIEW LINKS -->
+                <tr>
+                    <th scope="row">Preview links</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpnuxt_options[previewLinks]" value="1" <?php checked(!empty($options['previewLinks'])); ?> />
+                            Open the editor's Preview on the Front End URL
+                        </label>
+                        <p class="description">Replaces Faust.js's preview links. Keeps WordPress's preview parameters, which WPNuxt's preview mode reads.</p>
+                    </td>
+                </tr>
+                <!-- LINK REWRITES -->
+                <tr>
+                    <th scope="row">Permalinks and sitemaps</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpnuxt_options[rewriteLinks]" value="1" <?php checked(!empty($options['rewriteLinks'])); ?> />
+                            Point post, page and term links and sitemap URLs to the Front End URL
+                        </label>
+                        <p class="description">Replaces Faust.js's "Enable Post and Category URL rewrites". GraphQL responses keep the WordPress URLs.</p>
+                    </td>
+                </tr>
+                <!-- WORDFENCE CENTRAL -->
+                <tr>
+                    <th scope="row">Wordfence Central</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpnuxt_options[allowWordfenceCentral]" value="1" <?php checked(!empty($options['allowWordfenceCentral'])); ?> />
+                            Allow Wordfence Central to connect
+                        </label>
+                        <p class="description">Don't redirect the Wordfence Central pairing link (<code>?wfcentral_admin_redirect=…</code>), so pairing reaches wp-admin.</p>
                     </td>
                 </tr>
             </tbody>
         </table>
-        hasBlocksModule: <?php echo $wpNuxt->hasBlocksModule; ?><br>
-        hasAuthModule: <?php echo $wpNuxt->hasAuthModule; ?><br>
-        defaultMenuName: <?php echo $wpNuxt->defaultMenuName; ?><br>
+        <?php if ($wpNuxt): ?>
+            hasBlocksModule: <?php echo esc_html($wpNuxt->hasBlocksModule ?? ''); ?><br>
+            hasAuthModule: <?php echo esc_html($wpNuxt->hasAuthModule ?? ''); ?><br>
+            defaultMenuName: <?php echo esc_html($wpNuxt->defaultMenuName ?? ''); ?><br>
+        <?php endif; ?>
     </div>
 <?php
 }

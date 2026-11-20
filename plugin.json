@@ -1,11 +1,13 @@
 {
     "name": "WPNuxt Plugin",
-    "version": "0.0.2",
-    "download_url": "https://github.com/scottyzen/woonuxt-settings/releases/download/1.0.55/woonuxt-settings.zip",
+    "version": "0.0.4",
+    "download_url": "https://github.com/wpnuxt/wpnuxt-plugin/releases/download/v0.0.4/wpnuxt-plugin.zip",
 
     "homepage": "https://wpnuxt.com/",
-    "tested": "6.6",
-    "upgrade_notice": "",
+    "requires": "6.0",
+    "requires_php": "7.4",
+    "tested": "6.5",
+    "upgrade_notice": "WPNuxt no longer needs Faust.js. Turn on the public redirect, preview links and permalink rewrites in the WPNuxt settings before deactivating Faust.",
 
     "author": "Wouter Vernaillen",
     "author_homepage": "https://vernaillen.dev/",
@@ -13,7 +15,7 @@
     "sections": {
         "description": "WPNuxt is a plugin that helps you to integrate Nuxt.js with a headless WordPress.",
         "installation": "(Recommended) Installation instructions.",
-        "changelog": "<h2>0.0.1</h2><p>Init Plugin</p>"
+        "changelog": "<h2>0.0.4</h2><ul><li>Own public route redirect to the Nuxt frontend, replacing Faust.js's, with an option to let Wordfence Central pair.</li><li>Editor previews open on the Nuxt frontend.</li><li>Post, page and term links and sitemap URLs point to the Nuxt frontend.</li><li>Faust.js is no longer a required plugin.</li></ul><h2>0.0.3</h2><p>WPNuxt in the admin menu, GitHub release setup.</p><h2>0.0.2</h2><p>Plugin release.</p><h2>0.0.1</h2><p>Init Plugin</p>"
     },
 
     "icons": {
