@@ -39,7 +39,6 @@ require __DIR__ . '/includes/deny-public-access.php';
 require __DIR__ . '/includes/frontend-links.php';
 require __DIR__ . '/includes/cache-purge.php';
 require __DIR__ . '/includes/content-updated.php';
-require __DIR__ . '/includes/block-editor.php';
 
 // Define Globals
 global $wpnuxt_plugin_list;

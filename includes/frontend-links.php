@@ -79,6 +79,24 @@ function preview_post_link( $link, $post ) {
 }
 
 /**
+ * The block editor ignores preview_post_link for drafts and previews `link` + ?preview=true,
+ * which for a draft is /?p=123. Give the editor the preview link as `link` instead.
+ */
+add_action( 'rest_api_init', __NAMESPACE__ . '\\register_rest_preview_links' );
+function register_rest_preview_links() {
+	foreach ( get_post_types( array( 'show_in_rest' => true ) ) as $post_type ) {
+		add_filter( "rest_prepare_{$post_type}", __NAMESPACE__ . '\\rest_preview_link', 10, 3 );
+	}
+}
+
+function rest_preview_link( $response, $post, $request ) {
+	if ( is_preview_rewrite_enabled() && 'publish' !== $post->post_status && 'edit' === $request['context'] && isset( $response->data['link'] ) ) {
+		$response->data['link'] = get_preview_post_link( $post );
+	}
+	return $response;
+}
+
+/**
  * Unpublished posts have no pretty permalink yet, so use the one they will get.
  */
 function get_preview_path( \WP_Post $post ): string {
