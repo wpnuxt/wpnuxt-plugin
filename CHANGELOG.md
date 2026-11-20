@@ -1,5 +1,11 @@
 # wpnuxt-plugin
 
+## 0.0.6
+
+### Patch Changes
+
+- 5435225: The homepage, posts page and post type archive entries in Yoast's sitemaps point to the Nuxt frontend too
+
 ## 0.0.5
 
 ### Patch Changes
