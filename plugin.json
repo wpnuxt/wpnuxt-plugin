@@ -1,7 +1,7 @@
 {
     "name": "WPNuxt Plugin",
-    "version": "0.0.6",
-    "download_url": "https://github.com/wpnuxt/wpnuxt-plugin/releases/download/v0.0.6/wpnuxt-plugin.zip",
+    "version": "0.0.7",
+    "download_url": "https://github.com/wpnuxt/wpnuxt-plugin/releases/download/v0.0.7/wpnuxt-plugin.zip",
 
     "homepage": "https://wpnuxt.com/",
     "requires": "6.0",
