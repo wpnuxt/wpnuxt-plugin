@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.4",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.22.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -16,7 +16,7 @@
     "build:clean-vendor": "rimraf vendor",
     "build:composer-install": "composer install --no-dev",
     "build:zip": "wp-scripts plugin-zip",
-    "version": "changeset version && node bin/versionPlugin.js",
+    "version-packages": "changeset version && node bin/versionPlugin.js",
     "release": "npm run build:zip && changeset publish"
   },
   "files": [
@@ -29,7 +29,7 @@
     "@changesets/cli": "^2.26.0",
     "@wordpress/jest-console": "^6.4.0",
     "@wordpress/jest-puppeteer-axe": "^5.4.0",
-    "@wordpress/scripts": "^28.1.0",
+    "@wordpress/scripts": "^37.2.0",
     "expect-puppeteer": "^6.1.1",
     "puppeteer-testing-library": "^0.6.0",
     "rimraf": "^4.4.0"
